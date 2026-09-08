@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SellKabad — Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#0A0F0D',
+            'card-bg': '#111712',
+            'card-border': '#1C2420',
+            lime: '#B5FF47',
+            'lime-dim': '#7DBF2A',
+            rust: '#FF6B35',
+            sage: '#4A7B5B',
+            'sage-dim': '#2D4D38',
+            muted: '#6B7F70',
+            'text-primary': '#F0F7F2',
+            'text-secondary': '#8A9E8F',
+          },
+          fontFamily: {
+            syne: ['Syne', 'sans-serif'],
+            inter: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #060C09; font-family: 'Inter', sans-serif; overflow: hidden; }
+    .phone-frame {
+      width: 390px; height: 844px;
+      border-radius: 48px;
+      overflow: hidden;
+      position: relative;
+      border: 2px solid #1C2420;
+      box-shadow: 0 0 80px rgba(181,255,71,0.08), 0 40px 80px rgba(0,0,0,0.6);
+    }
+    .screen { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+    .screen::-webkit-scrollbar { display: none; }
+    .slide-in { animation: slideIn 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .slide-up { animation: slideUp 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+    @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .fade-in { animation: fadeIn 0.4s ease both; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .pulse-dot { animation: pulseDot 2s ease-in-out infinite; }
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.6; }
+    }
+    .ticker-wrap { animation: ticker 18s linear infinite; display: flex; gap: 48px; white-space: nowrap; }
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .bid-enter { animation: bidEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    @keyframes bidEnter { from { transform: translateY(24px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+    .gps-ring { animation: gpsRing 2s ease-out infinite; }
+    @keyframes gpsRing { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
+    .score-bar { animation: fillBar 1.2s cubic-bezier(0.4, 0, 0.2, 1) both; transform-origin: left; }
+    @keyframes fillBar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    .float { animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+    .spin-slow { animation: spin 8s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .shimmer { background: linear-gradient(90deg, transparent 0%, rgba(181,255,71,0.05) 50%, transparent 100%); animation: shimmer 2s infinite; background-size: 200% 100%; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    input, select, textarea { outline: none; }
+    .safe-top { padding-top: 52px; }
+    .safe-bot { padding-bottom: 88px; }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen w-full">
+
+  <!-- Ambient glow -->
+  <div class="fixed inset-0 pointer-events-none">
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-lime/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-1/4 left-1/3 w-64 h-64 bg-rust/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Prototype Controls -->
+  <div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3">
+    <div class="bg-card-bg border border-card-border rounded-2xl px-2 py-2 flex items-center gap-1">
+      <button onclick="setMode('customer')" id="btn-customer"
+        class="mode-btn px-4 py-1.5 rounded-xl text-sm font-syne font-600 transition-all active-mode">
+        👤 Customer
+      </button>
+      <button onclick="setMode('vendor')" id="btn-vendor"
+        class="mode-btn px-4 py-1.5 rounded-xl text-sm font-syne font-600 transition-all">
+        🚛 Vendor
+      </button>
+    </div>
+    <div class="bg-card-bg border border-card-border rounded-2xl px-3 py-2 text-xs text-text-secondary font-inter">
+      SellKabad · UI Prototype
+    </div>
+  </div>
+
+  <!-- Phone Frame -->
+  <div class="phone-frame bg-obsidian" id="phone">
+    <!-- Status Bar -->
+    <div class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-8 pt-4 pb-2">
+      <span class="text-text-primary text-xs font-inter font-500">9:41</span>
+      <div class="w-28 h-7 bg-black rounded-full absolute top-0 left-1/2 -translate-x-1/2"></div>
+      <div class="flex items-center gap-1.5">
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="1" fill="#F0F7F2"/><rect x="4" y="2" width="3" height="10" rx="1" fill="#F0F7F2"/><rect x="8" y="0" width="3" height="12" rx="1" fill="#F0F7F2"/><rect x="12" y="0" width="4" height="12" rx="1" fill="#F0F7F2" opacity="0.3"/></svg>
+        <svg width="16" height="12" viewBox="0 0 24 24" fill="none"><path d="M1.5 8.5C5.5 4.5 18.5 4.5 22.5 8.5M5 12C7.5 9.5 16.5 9.5 19 12M8.5 15.5C10 14 14 14 15.5 15.5M12 19h0" stroke="#F0F7F2" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#F0F7F2" stroke-opacity="0.35"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#F0F7F2"/><path d="M23 4v4a2 2 0 000-4z" fill="#F0F7F2" fill-opacity="0.4"/></svg>
+      </div>
+    </div>
+
+    <!-- Screen Container -->
+    <div id="screen-container" class="w-full h-full"></div>
+  </div>
+
+  <!-- Screen Indicator -->
+  <div class="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-2" id="screen-dots"></div>
+
+  <script src="screens.js"></script>
+  <script src="app.js"></script>
+
+  <style>
+    .active-mode { background: #B5FF47; color: #0A0F0D; }
+    .mode-btn { color: #6B7F70; }
+    .mode-btn.active-mode { color: #0A0F0D; }
+  </style>
+</body>
+</html>
